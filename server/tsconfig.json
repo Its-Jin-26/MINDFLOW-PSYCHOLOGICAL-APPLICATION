@@ -15,8 +15,7 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "types": ["node"]
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
 }
