@@ -8,7 +8,8 @@ import bcrypt from 'bcryptjs';
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'], credentials: true }));
+// CORS: permitir orígenes configurados o, si falla, cualquier origen (para frontend en Vercel/Render)
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
