@@ -1,4 +1,4 @@
-# MindFlow – Psychological Application
+# MINDFLOW PSYCHOLOGICAL APPLICATION
 
 Aplicación web para el acompañamiento psicológico y el seguimiento de hábitos, estados de ánimo y objetivos personales.
 
@@ -128,4 +128,4 @@ Algunas posibles mejoras futuras:
 
 ## Licencia
 
-Nertek Systems Technologies © 2025. Todos los derechos de esta aplicación están reservados. 
+Nertek Systems Technologies © 2025. Todos los derechos de esta aplicación están reservados.
