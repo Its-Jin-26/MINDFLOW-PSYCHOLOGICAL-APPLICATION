@@ -23,7 +23,7 @@ export default function ThemeSwitcher() {
   return (
     <button
       onClick={() => setTheme(nextTheme(theme))}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 bg-slate-200 text-slate-700 ring-slate-300 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-700"
+      className="inline-flex h-12 w-12 md:h-10 md:w-10 items-center justify-center rounded-md ring-1 bg-slate-200 text-slate-700 ring-slate-300 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-700"
       aria-label="Cambiar tema"
       title={`Tema: ${theme}`}
     >
