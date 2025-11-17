@@ -12,8 +12,11 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "types": ["node"]
   },
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
 }
