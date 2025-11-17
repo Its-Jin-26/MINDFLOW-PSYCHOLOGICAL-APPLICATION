@@ -90,6 +90,7 @@ export default function SettingsPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="Ingresa tu nombre"
             className="w-full rounded-md border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-slate-100 placeholder:text-slate-400 outline-none focus:border-slate-500 focus:ring-2 focus:ring-purple-600/40"
           />
         </div>
@@ -99,6 +100,7 @@ export default function SettingsPage() {
             type="text"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
+            placeholder="Correo o número de teléfono"
             className="w-full rounded-md border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-slate-100 placeholder:text-slate-400 outline-none focus:border-slate-500 focus:ring-2 focus:ring-purple-600/40"
           />
         </div>
