@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node dist/express/index.js",
+    "start": "node dist/index.js",
     "build": "tsc -p tsconfig.build.json",
     "dev": "ts-node-dev --respawn --transpile-only src/express/index.ts",
     "migrate:dev": "prisma migrate dev",
