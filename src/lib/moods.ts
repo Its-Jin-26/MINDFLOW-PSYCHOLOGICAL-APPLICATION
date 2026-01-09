@@ -7,6 +7,22 @@ async function safeJson(res: Response) {
   try { return await res.json(); } catch { return null; }
 }
 
+export const MOOD_LABELS: Record<string, string> = {
+  FELIZ: 'Feliz',
+  NEUTRAL: 'Neutral',
+  TRISTE: 'Triste',
+  ENERGETICO: 'Energético',
+  PENSATIVO: 'Pensativo',
+  ABRUMADO: 'Abrumado',
+  AMADO: 'Amado',
+  OPTIMISTA: 'Optimista',
+};
+
+export function getMoodLabel(code: string | null | undefined): string {
+  if (!code) return '—';
+  return MOOD_LABELS[code] ?? code;
+}
+
 export async function apiCreateMood(token: string, input: MoodInput) {
   const res = await fetch(`${BASE_URL}/moods`, {
     method: 'POST',

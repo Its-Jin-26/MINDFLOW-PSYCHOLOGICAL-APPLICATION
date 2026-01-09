@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { authStorage } from '../../lib/api';
-import { apiCreateMood, apiGetLatestMood } from '../../lib/moods.ts';
+import { apiCreateMood, apiGetLatestMood, getMoodLabel, type Mood } from '../../lib/moods.ts';
 import { Smile, Meh, Frown, Sun, CloudRain, Heart, ThumbsUp, Brain } from 'lucide-react';
 
 const MOODS: { key: string; label: string; icon: JSX.Element }[] = [
@@ -19,6 +19,8 @@ export default function EmotionalSpace() {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [latestMood, setLatestMood] = useState<Mood>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -26,11 +28,13 @@ export default function EmotionalSpace() {
     apiGetLatestMood(token)
       .then((m) => {
         if (m) {
-          setSelected(m.type || null);
-          setNote(m.note || '');
+          setLatestMood(m);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setLoaded(true);
+      });
   }, []);
 
   async function onSave(e: React.FormEvent) {
@@ -41,8 +45,12 @@ export default function EmotionalSpace() {
     try {
       const token = authStorage.getToken();
       if (!token) throw new Error('Sesión no válida');
-      await apiCreateMood(token, { type: selected, note });
+      const saved = await apiCreateMood(token, { type: selected, note });
+      setLatestMood(saved);
       setMessage('Estado emocional guardado');
+      // Reset completo del formulario
+      setSelected(null);
+      setNote('');
     } catch (err: any) {
       setMessage(err?.message || 'No se pudo guardar');
     } finally {
@@ -51,10 +59,14 @@ export default function EmotionalSpace() {
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      className={`space-y-6 md:space-y-4 transform transition-all duration-300 ${
+        loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`}
+    >
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Espacio Emocional</h1>
 
-      <div className="rounded-xl bg-white p-6 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:ring-black/20">
+      <div className="rounded-xl bg-white p-6 md:p-5 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:ring-black/20">
         <div className="mb-4 text-base font-semibold text-slate-900 dark:text-slate-100">¿Cómo te sientes hoy?</div>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -81,12 +93,16 @@ export default function EmotionalSpace() {
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          rows={4}
+          rows={1}
           placeholder="Escribe aquí tus pensamientos..."
           className="mt-2 w-full rounded-md border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-2 focus:ring-purple-600/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
         />
 
-        {message && <div className="mt-4 text-sm text-emerald-600 dark:text-emerald-400">{message}</div>}
+        {message && (
+          <div className="mt-4 text-sm text-emerald-600 dark:text-emerald-400">
+            {message}
+          </div>
+        )}
 
         <button
           onClick={onSave}
@@ -95,6 +111,19 @@ export default function EmotionalSpace() {
         >
           {saving ? 'Guardando...' : 'Guardar Estado Emocional'}
         </button>
+        {latestMood && (
+          <div className="mt-6 md:mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-700 dark:bg-slate-800/80 dark:text-slate-100">
+            <div className="font-semibold text-slate-900 dark:text-slate-50">Último estado guardado</div>
+            <div className="mt-1">
+              <span className="font-medium">Estado:</span> {getMoodLabel(latestMood.type)}
+            </div>
+            {latestMood.note && (
+              <div className="mt-1">
+                <span className="font-medium">Nota:</span> {latestMood.note}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

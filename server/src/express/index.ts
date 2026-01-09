@@ -157,10 +157,37 @@ app.get('/habits', authMiddleware, async (req, res) => {
 
 app.post('/habits', authMiddleware, async (req, res) => {
   const userId = (req as any).userId as string;
-  const { title } = req.body as { title?: string };
-  if (!title || !title.trim()) return res.status(400).json({ error: 'Título requerido' });
+  const { title, goalTitle, dueDate } = req.body as { title?: string; goalTitle?: string; dueDate?: string | null };
+  if (!title || !title.trim()) return res.status(400).json({ error: 'Título de hábito requerido' });
   try {
-    const habit = await prisma.habit.create({ data: { userId, title: title.trim() } });
+    let goalId: string | undefined;
+    if (goalTitle && goalTitle.trim()) {
+      let due: Date | null = null;
+      if (dueDate) {
+        const m = String(dueDate).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m) {
+          const y = Number(m[1]);
+          const mo = Number(m[2]);
+          const d = Number(m[3]);
+          due = new Date(y, mo - 1, d);
+        } else {
+          due = new Date(dueDate);
+        }
+      }
+      const goal = await prisma.goal.create({
+        data: {
+          userId,
+          title: goalTitle.trim(),
+          status: 'OPEN',
+          dueDate: due,
+        },
+      });
+      goalId = goal.id;
+    }
+
+    const habit = await prisma.habit.create({
+      data: { userId, title: title.trim(), goalId },
+    });
     return res.status(201).json({ id: habit.id, title: habit.title, createdAt: habit.createdAt });
   } catch {
     return res.status(500).json({ error: 'No se pudo crear el hábito' });
@@ -174,6 +201,9 @@ app.delete('/habits/:id', authMiddleware, async (req, res) => {
     const h = await prisma.habit.findUnique({ where: { id } });
     if (!h || h.userId !== userId) return res.status(404).json({ error: 'No encontrado' });
     await prisma.habitLog.deleteMany({ where: { habitId: id } });
+    if (h.goalId) {
+      await prisma.goal.deleteMany({ where: { id: h.goalId, userId } });
+    }
     await prisma.habit.delete({ where: { id } });
     return res.json({ ok: true });
   } catch {
@@ -206,6 +236,23 @@ app.post('/habits/:id/checkin', authMiddleware, async (req, res) => {
   } else {
     await prisma.habitLog.create({ data: { habitId: id, status: 'DONE', date: new Date() } });
   }
+
+  // Si el hábito está vinculado a un objetivo con targetDays, comprobar si se ha cumplido
+  if (h.goalId) {
+    const goal = await prisma.goal.findUnique({ where: { id: h.goalId } });
+    if (goal && goal.targetDays && goal.status !== 'DONE') {
+      const logs = await prisma.habitLog.findMany({ where: { habitId: id, status: 'DONE' }, select: { date: true } });
+      const dayKeys = new Set<string>();
+      for (const l of logs) {
+        const d = new Date(l.date);
+        d.setHours(0, 0, 0, 0);
+        dayKeys.add(d.toISOString().slice(0, 10));
+      }
+      if (dayKeys.size >= goal.targetDays) {
+        await prisma.goal.update({ where: { id: goal.id }, data: { status: 'DONE', completedAt: new Date() } });
+      }
+    }
+  }
   return res.json({ ok: true });
 });
 
@@ -224,7 +271,15 @@ app.delete('/habits/:id/checkin', authMiddleware, async (req, res) => {
 app.get('/goals', authMiddleware, async (req, res) => {
   const userId = (req as any).userId as string;
   const goals = await prisma.goal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
-  return res.json(goals.map(g => ({ id: g.id, title: g.title, dueDate: g.dueDate, status: g.status, createdAt: g.createdAt })));
+  return res.json(goals.map(g => ({
+    id: g.id,
+    title: g.title,
+    dueDate: g.dueDate,
+    status: g.status,
+    targetDays: g.targetDays,
+    completedAt: g.completedAt,
+    createdAt: g.createdAt,
+  })));
 });
 
 app.post('/goals', authMiddleware, async (req, res) => {
@@ -269,26 +324,34 @@ app.delete('/goals/:id', authMiddleware, async (req, res) => {
 // Progress endpoint --------------------------------------------
 app.get('/progress', authMiddleware, async (req, res) => {
   const userId = (req as any).userId as string;
-  // Range last 7 days (including today)
+  // Ventana fija: últimos 7 días incluyendo hoy
   const today = new Date();
-  const start = new Date(today);
-  start.setHours(0, 0, 0, 0);
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+
   const days: Date[] = [];
-  for (let i = 6; i >= 0; i--) {
+  const start = new Date(todayStart);
+  // Ventana: hoy (posición 0) y los siguientes 6 días
+  for (let i = 0; i < 7; i++) {
     const d = new Date(start);
-    d.setDate(start.getDate() - i);
+    d.setDate(start.getDate() + i);
     days.push(d);
   }
 
   const totalHabits = await prisma.habit.count({ where: { userId, archived: false } });
   const logs = await prisma.habitLog.findMany({
     where: { habit: { userId }, date: { gte: new Date(days[0]) }, status: 'DONE' },
-    select: { date: true },
+    select: { date: true, habitId: true },
   });
 
   // Map YYYY-MM-DD => count of done logs
   const byDay = new Map<string, number>();
-  const keyOf = (d: Date) => d.toISOString().slice(0, 10);
+  const keyOf = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   for (const l of logs) {
     const k = keyOf(new Date(l.date));
     byDay.set(k, (byDay.get(k) || 0) + 1);
@@ -303,18 +366,19 @@ app.get('/progress', authMiddleware, async (req, res) => {
     return pct;
   });
 
-  // Weekly average
+  // Weekly average sobre toda la ventana de 7 días
   const weeklyAverage = Math.round(
     weeklySeries.reduce((a, b) => a + b, 0) / (weeklySeries.length || 1),
   );
 
-  // Streak (consecutive days ending today with any DONE log)
+  // Streak (consecutive days ending today con TODOS los hábitos activos completados)
   let streakDays = 0;
   for (let i = 0; i < 365; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() - i);
+    const d = new Date(todayStart);
+    d.setDate(todayStart.getDate() - i);
     const k = keyOf(d);
-    const has = (byDay.get(k) || 0) > 0;
+    const doneCount = byDay.get(k) || 0;
+    const has = totalHabits > 0 && doneCount >= totalHabits;
     if (has) streakDays += 1; else break;
   }
 

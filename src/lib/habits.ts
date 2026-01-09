@@ -16,11 +16,11 @@ export async function apiListHabits(token: string) {
   return data as Habit[];
 }
 
-export async function apiCreateHabit(token: string, title: string) {
+export async function apiCreateHabit(token: string, title: string, goalTitle?: string, dueDate?: string | null) {
   const res = await fetch(`${BASE_URL}/habits`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ title, goalTitle, dueDate }),
   });
   const data = await safeJson(res);
   if (!res.ok) throw new Error(data?.error || 'No se pudo crear el hábito');

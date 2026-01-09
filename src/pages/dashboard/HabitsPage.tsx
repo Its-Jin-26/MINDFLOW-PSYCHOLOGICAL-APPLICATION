@@ -6,9 +6,12 @@ import { Trash2 } from 'lucide-react';
 export default function HabitsPage() {
   const [habits, setHabits] = useState<HabitToday[]>([]);
   const [title, setTitle] = useState('');
+  const [goalTitle, setGoalTitle] = useState('');
+  const [dueDate, setDueDate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -22,6 +25,7 @@ export default function HabitsPage() {
       setError(err?.message || 'No se pudieron cargar los hábitos');
     } finally {
       setLoading(false);
+      setLoaded(true);
     }
   }
 
@@ -35,8 +39,10 @@ export default function HabitsPage() {
     try {
       const token = authStorage.getToken();
       if (!token) throw new Error('Sesión no válida');
-      await apiCreateHabit(token, title.trim());
+      await apiCreateHabit(token, title.trim(), goalTitle.trim() || undefined, dueDate || null);
       setTitle('');
+      setGoalTitle('');
+      setDueDate('');
       await load();
     } catch (err: any) {
       setError(err?.message || 'No se pudo crear el hábito');
@@ -67,25 +73,46 @@ export default function HabitsPage() {
     }
   }
 
+  const allDoneToday = habits.length > 0 && habits.every((h) => h.doneToday);
+
   return (
-    <div className="space-y-6">
+    <div
+      className={`space-y-6 transform transition-all duration-300 ${
+        loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`}
+    >
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Hábitos Diarios</h1>
 
       <div className="rounded-xl bg-white p-5 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:ring-black/20">
-        <form onSubmit={onCreate} className="flex gap-3">
+        <form onSubmit={onCreate} className="grid grid-cols-1 gap-3 md:grid-cols-[2fr,2fr,auto]">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Describe tu nuevo hábito..."
-            className="flex-1 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-2 focus:ring-purple-600/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            placeholder="Describe tu nuevo hábito diario..."
+            className="rounded-md border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-2 focus:ring-purple-600/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
-          <button
-            type="submit"
-            disabled={creating}
-            className="rounded-md bg-purple-600 px-4 py-2.5 font-semibold text-white hover:bg-purple-500 disabled:opacity-60"
-          >
-            {creating ? 'Agregando...' : 'Agregar'}
-          </button>
+          <input
+            value={goalTitle}
+            onChange={(e) => setGoalTitle(e.target.value)}
+            placeholder="Tu objetivo es..."
+            className="rounded-md border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-2 focus:ring-purple-600/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              placeholder="Fecha límite"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-2 focus:ring-purple-600/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+            <button
+              type="submit"
+              disabled={creating}
+              className="rounded-md bg-purple-600 px-4 py-2.5 font-semibold text-white hover:bg-purple-500 disabled:opacity-60"
+            >
+              {creating ? 'Agregando...' : 'Agregar'}
+            </button>
+          </div>
         </form>
         {error && <div className="mt-3 text-sm text-rose-500">{error}</div>}
       </div>
@@ -96,27 +123,38 @@ export default function HabitsPage() {
         ) : habits.length === 0 ? (
           <div className="text-slate-500 dark:text-slate-400">No hay hábitos para hoy. ¡Comienza agregando uno!</div>
         ) : (
-          <ul className="divide-y divide-slate-200 dark:divide-slate-800">
-            {habits.map((h) => (
-              <li key={h.id} className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={h.doneToday}
-                    onChange={(e) => toggleDone(h.id, e.target.checked)}
-                    className="h-5 w-5 accent-purple-600"
-                  />
-                  <div>
-                    <div className="font-medium text-slate-900 dark:text-slate-100">{h.title}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Creado: {new Date(h.createdAt).toLocaleDateString()}</div>
+          <>
+            <ul className="divide-y divide-slate-200 dark:divide-slate-800">
+              {habits.map((h) => (
+                <li key={h.id} className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={h.doneToday}
+                      onChange={(e) => toggleDone(h.id, e.target.checked)}
+                      className="h-5 w-5 accent-purple-600"
+                    />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100">{h.title}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Creado: {new Date(h.createdAt).toLocaleDateString()}</div>
+                    </div>
                   </div>
-                </div>
-                <button onClick={() => onDelete(h.id)} className="rounded-md bg-slate-200 p-2 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" aria-label="Eliminar">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <button
+                    onClick={() => onDelete(h.id)}
+                    className="rounded-md bg-slate-200 p-2 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {allDoneToday && (
+              <div className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 ring-1 ring-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-500/40">
+                ¡Excelente! Hoy ya cuenta para tus <span className="font-semibold">Días Consecutivos</span> en la sección de Progreso.
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

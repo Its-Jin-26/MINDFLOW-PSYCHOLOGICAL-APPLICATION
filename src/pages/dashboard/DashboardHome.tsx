@@ -2,7 +2,7 @@ import { Brain, CalendarDays, Gauge, LineChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { apiMe, authStorage } from '../../lib/api';
-import { apiGetLatestMood } from '../../lib/moods';
+import { apiGetLatestMood, getMoodLabel } from '../../lib/moods';
 import { apiListHabitsToday } from '../../lib/habits';
 import { apiListGoals } from '../../lib/goals';
 
@@ -11,6 +11,7 @@ export default function DashboardHome() {
   const [mood, setMood] = useState<string>('—');
   const [habitsDone, setHabitsDone] = useState<string>('—');
   const [openGoals, setOpenGoals] = useState<string>('—');
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -23,7 +24,7 @@ export default function DashboardHome() {
           apiListHabitsToday(token),
           apiListGoals(token),
         ]);
-        setMood(m ? m.type : '—');
+        setMood(m ? getMoodLabel(m.type) : '—');
         if (today && Array.isArray(today)) {
           const done = today.filter(t => t.doneToday).length;
           setHabitsDone(`${done}/${today.length}`);
@@ -33,13 +34,20 @@ export default function DashboardHome() {
           setOpenGoals(String(open));
         }
       } catch {}
+      finally {
+        setLoaded(true);
+      }
     })();
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div
+      className={`space-y-6 transform transition-all duration-300 ${
+        loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`}
+    >
       {/* Hero */}
-      <div className="rounded-xl bg-gradient-to-r from-purple-700 to-purple-600 px-6 py-6 text-white shadow">
+      <div className="mt-2 md:mt-4 rounded-xl bg-gradient-to-r from-purple-700 to-purple-600 px-6 py-6 text-white shadow">
         <h2 className="text-3xl font-extrabold">{`¡Bienvenido${userName ? `, ${userName}` : ''}!`}</h2>
         <p className="mt-1 text-white/80">¿Qué te gustaría hacer hoy?</p>
       </div>
@@ -47,7 +55,7 @@ export default function DashboardHome() {
       {/* Grid modules */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <Link to="/app/dashboard/emotional" className="flex items-start gap-4 rounded-xl bg-white p-5 ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800/70 dark:ring-black/20 dark:hover:bg-slate-800">
-          <div className="rounded bg-purple-700/20 p-2 dark:bg-purple-700/30"><Gauge className="h-6 w-6 text-purple-500 dark:text-purple-400" /></div>
+          <div className="rounded bg-purple-700/20 p-2 dark:bg-purple-700/30"><Brain className="h-6 w-6 text-purple-500 dark:text-purple-400" /></div>
           <div>
             <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Espacio Emocional</div>
             <div className="text-sm text-slate-500 dark:text-slate-400">Registra y analiza tus estados de ánimo diarios</div>
@@ -63,7 +71,7 @@ export default function DashboardHome() {
         </Link>
 
         <Link to="/app/dashboard/goals" className="flex items-start gap-4 rounded-xl bg-white p-5 ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800/70 dark:ring-black/20 dark:hover:bg-slate-800">
-          <div className="rounded bg-purple-700/20 p-2 dark:bg-purple-700/30"><Brain className="h-6 w-6 text-purple-500 dark:text-purple-400" /></div>
+          <div className="rounded bg-purple-700/20 p-2 dark:bg-purple-700/30"><Gauge className="h-6 w-6 text-purple-500 dark:text-purple-400" /></div>
           <div>
             <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Objetivos</div>
             <div className="text-sm text-slate-500 dark:text-slate-400">Establece y alcanza tus metas personales</div>
