@@ -1,6 +1,14 @@
 import { BASE_URL } from './api';
 
-export type Goal = { id: string; title: string; dueDate: string | null; status: string; createdAt: string };
+export type Goal = {
+  id: string;
+  title: string;
+  dueDate: string | null;
+  status: string;
+  targetDays?: number | null;
+  completedAt?: string | null;
+  createdAt: string;
+};
 
 async function safeJson(res: Response) {
   try { return await res.json(); } catch { return null; }

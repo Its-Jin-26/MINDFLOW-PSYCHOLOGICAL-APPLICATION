@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [openReset, setOpenReset] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -21,6 +22,7 @@ export default function SettingsPage() {
       .then((u) => {
         setName(u.name || '');
         setIdentifier(u.identifier || '');
+        setLoaded(true);
       })
       .catch(() => {
         authStorage.clear();
@@ -80,7 +82,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div
+      className={`max-w-2xl space-y-6 transform transition-all duration-300 ${
+        loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`}
+    >
       <h1 className="text-2xl font-bold text-slate-100">Configuración</h1>
 
       <form onSubmit={onSave} className="space-y-5 rounded-xl bg-slate-900/60 p-5 ring-1 ring-black/20">

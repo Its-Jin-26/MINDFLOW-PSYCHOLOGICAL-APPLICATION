@@ -29,7 +29,7 @@ export default function AppLayout() {
     to: string,
     label: string,
     icon: JSX.Element,
-    opts?: { end?: boolean; onClick?: () => void },
+    opts?: { end?: boolean; onClick?: () => void; className?: string },
   ) => (
     <NavLink
       to={to}
@@ -40,7 +40,7 @@ export default function AppLayout() {
           isActive
             ? 'bg-purple-600/15 ring-1 ring-purple-200 text-slate-900 dark:bg-purple-600/20 dark:ring-purple-700/50 dark:text-slate-100'
             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-slate-100'
-        }`
+        } ${opts?.className ?? ''}`
       }
     >
       {icon}
@@ -61,7 +61,7 @@ export default function AppLayout() {
 
         <div className="flex items-center gap-3">
           <ThemeSwitcher />
-          <div className="relative">
+          <div className="relative z-20">
             <button
               onClick={() => setMenuOpen((v) => !v)}
               className="inline-flex h-12 w-12 md:h-10 md:w-10 items-center justify-center rounded-md ring-1 bg-slate-200 text-slate-700 ring-slate-300 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-700"
@@ -172,7 +172,7 @@ export default function AppLayout() {
                 end: true,
                 onClick: () => setNavOpen(false),
               })}
-              {navItem('/app/dashboard/emotional', 'Espacio Emocional', <Gauge className="h-5 w-5" />, {
+              {navItem('/app/dashboard/emotional', 'Espacio Emocional', <Brain className="h-5 w-5" />, {
                 onClick: () => setNavOpen(false),
               })}
               {navItem('/app/dashboard/habits', 'Hábitos Diarios', <CalendarDays className="h-5 w-5" />, {
@@ -191,13 +191,38 @@ export default function AppLayout() {
 
       {/* Body with sidebar */}
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-3 py-6 md:flex-row">
-        <aside className="hidden w-[16rem] shrink-0 md:block">
-          <nav className="flex flex-col gap-1.5">
-            {navItem('/app/dashboard', 'Dashboard', <LayoutDashboard className="h-5 w-5" />, { end: true })}
-            {navItem('/app/dashboard/emotional', 'Espacio Emocional', <Gauge className="h-5 w-5" />)}
-            {navItem('/app/dashboard/habits', 'Hábitos Diarios', <CalendarDays className="h-5 w-5" />)}
-            {navItem('/app/dashboard/goals', 'Objetivos', <Gauge className="h-5 w-5" />)}
-            {navItem('/app/dashboard/progress', 'Progreso', <LineChart className="h-5 w-5" />)}
+        <aside className="hidden w-[18rem] shrink-0 md:block">
+          <nav className="flex flex-col gap-2">
+            {navItem(
+              '/app/dashboard',
+              'Dashboard',
+              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6" />,
+              { end: true, className: 'md:px-4 md:py-3 md:text-[1.05rem]' },
+            )}
+            {navItem(
+              '/app/dashboard/emotional',
+              'Espacio Emocional',
+              <Brain className="h-5 w-5 md:h-6 md:w-6" />,
+              { className: 'md:px-4 md:py-3 md:text-[1.05rem]' },
+            )}
+            {navItem(
+              '/app/dashboard/habits',
+              'Hábitos Diarios',
+              <CalendarDays className="h-5 w-5 md:h-6 md:w-6" />,
+              { className: 'md:px-4 md:py-3 md:text-[1.05rem]' },
+            )}
+            {navItem(
+              '/app/dashboard/goals',
+              'Objetivos',
+              <Gauge className="h-5 w-5 md:h-6 md:w-6" />,
+              { className: 'md:px-4 md:py-3 md:text-[1.05rem]' },
+            )}
+            {navItem(
+              '/app/dashboard/progress',
+              'Progreso',
+              <LineChart className="h-5 w-5 md:h-6 md:w-6" />,
+              { className: 'md:px-4 md:py-3 md:text-[1.05rem]' },
+            )}
           </nav>
         </aside>
         <main className="mx-auto w-full max-w-xl flex-1 md:mx-0 md:max-w-none">
