@@ -4,11 +4,11 @@ Aplicación web para el acompañamiento psicológico y el seguimiento de hábito
 
 Incluye:
 
-- **Autenticación** (registro, login, perfil de usuario).
+- **Autenticación** (registro, login optimizado y perfil de usuario).
 - **Espacio emocional** para registrar estado de ánimo diario y notas.
 - **Hábitos diarios** con check-ins y cálculo de streaks.
-- **Objetivos** con fecha objetivo.
-- **Progreso** con métricas y gráfico semanal.
+- **Objetivos** vinculados a los hábitos, con fecha objetivo y días objetivo.
+- **Progreso** con métricas, indicador de días consecutivos y promedio semanal.
 
 El proyecto está optimizado tanto para **escritorio** como para **dispositivos móviles**, con un layout y navegación específicos para cada caso.
 
@@ -53,6 +53,23 @@ Comunicación entre capas:
   - Hábitos y check-ins (`/habits`, `/habits/today`, `/habits/:id/checkin`).
   - Objetivos (`/goals`).
   - Progreso (`/progress`).
+
+### Flujo funcional de los módulos
+
+- **Login / Registro**
+  - Rutas: `/app/login` y `/app/register`.
+  - Al cargar estas pantallas, el frontend realiza un ping silencioso a `/health` para "despertar" el backend en Render.
+  - De esta forma, cuando el usuario pulsa **Iniciar Sesión** o **Registrarse**, la petición a `/auth/login` o `/auth/register` es prácticamente inmediata incluso tras periodos de inactividad.
+
+- **Hábitos → Objetivos → Progreso**
+  - Al crear un hábito diario se puede asociar un **objetivo** con fecha límite y/o días objetivo.
+  - Cada día, el usuario marca sus hábitos en `/app/dashboard/habits`.
+  - Cuando **todos los hábitos activos del día** están marcados como completados, el sistema suma un día a los **días consecutivos (streak)**.
+  - Cuando se cumple el número de días objetivo, el objetivo asociado pasa automáticamente a estado cumplido.
+  - En `/app/dashboard/progress` se muestra:
+    - El número de días consecutivos.
+    - Un **indicador de pasos** (7 días) que refleja visualmente la racha.
+    - Un porcentaje de **promedio semanal** basado en los últimos 7 días.
 
 ---
 
