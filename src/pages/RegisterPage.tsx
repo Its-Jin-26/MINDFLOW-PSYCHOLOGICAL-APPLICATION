@@ -1,7 +1,7 @@
 import { Brain } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { apiRegister, authStorage } from '../lib/api';
+import { useEffect, useState } from 'react';
+import { BASE_URL, apiRegister, authStorage } from '../lib/api';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -10,6 +10,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Precalentamos el backend para que el registro sea inmediato al enviar el formulario
+    fetch(`${BASE_URL}/health`).catch(() => {
+      // Ignoramos errores aquí porque solo es un ping de calentamiento
+    });
+  }, []);
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-purple-500 via-purple-600 to-violet-700 flex items-center justify-center p-4">
       <div className="w-full max-w-md rounded-xl bg-slate-900/95 p-8 shadow-2xl ring-1 ring-black/10">
