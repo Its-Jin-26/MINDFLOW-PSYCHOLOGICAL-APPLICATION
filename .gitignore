@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Secret management
+# .Env files
 .env
 .env.local
 .env.*.local
