@@ -105,7 +105,7 @@ export default function ProgressPage() {
               })}
             </div>
 
-            {/* BARRA DE PORCENTAJE AL RAS: Ajustada para coincidir con los bordes de los cuadros 1 y 7 */}
+            {/* BARRA DE PORCENTAJE: Ajustada para coincidir con los bordes de los cuadros 1 y 7 */}
             <div className="px-4 sm:px-[18px]"> 
               <div className="flex items-center gap-3 pt-2">
                 <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-slate-900/40">
