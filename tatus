@@ -1,17 +1,26 @@
-[33mcommit ec10eaf2f9d1f01abce4a55607212e56aaaaaf88[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
-Author: Jin-Tech-26 <jindev.tech1@gmail.com>
-Date:   Mon Nov 17 14:19:29 2025 -0600
-
-    Actualización de información en el archivo README.
-
-[33mcommit 2836747a7fda780a1b7addfd40f1867bca731a1c[m
-Author: Jin-Tech-26 <jindev.tech1@gmail.com>
-Date:   Mon Nov 17 14:10:45 2025 -0600
-
-    Rediseño para interfaces en dispositivos móviles.
-
-[33mcommit 80f88ccecd7ded1cd9acba0ffcc3affd3622ed36[m
-Author: Jin-Tech-26 <jindev.tech1@gmail.com>
-Date:   Mon Nov 17 02:52:10 2025 -0600
-
-    .
+[
+   {
+     "hash": "ec10eaf2f9d1f01abce4a55607212e56aaaaaf88",
+     "branch": "main",
+     "remote_branch": "origin/main",
+     "remote_head": "origin/HEAD",
+     "author": "Jin-Tech-26",
+     "email": "jindev.tech1@gmail.com",
+     "date": "2025-11-17T14:19:29-06:00",
+     "message": "Actualización de información en el archivo README."
+   },
+   {
+     "hash": "2836747a7fda780a1b7addfd40f1867bca731a1c",
+     "author": "Jin-Tech-26",
+     "email": "jindev.tech1@gmail.com",
+     "date": "2025-11-17T14:10:45-06:00",
+     "message": "Rediseño para interfaces en dispositivos móviles."
+   },
+   {
+     "hash": "80f88ccecd7ded1cd9acba0ffcc3affd3622ed36",
+     "author": "Jin-Tech-26",
+     "email": "jindev.tech1@gmail.com",
+     "date": "2025-11-17T02:52:10-06:00",
+     "message": "."
+   }
+ ]
